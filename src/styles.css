@@ -206,13 +206,33 @@ select {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 24px;
+  gap: 20px;
   align-content: start;
   min-height: 560px;
   padding: 18px;
   border-radius: 22px;
   background: var(--surface-soft);
   border: 2px dashed rgba(101, 210, 174, 0.2);
+}
+
+.canvas-stage-wrap {
+  overflow: auto;
+  padding-bottom: 6px;
+}
+
+.canvas-stage {
+  position: relative;
+  min-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.canvas-note {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .canvas-shell__content h2,
@@ -227,6 +247,103 @@ select {
   margin: 0;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.flow-node {
+  position: absolute;
+  width: 230px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #0d0d0d;
+  box-shadow: 0 16px 24px rgba(0, 0, 0, 0.22);
+}
+
+.flow-node--start {
+  border-color: rgba(79, 209, 179, 0.45);
+}
+
+.flow-node--question {
+  border-color: rgba(243, 190, 88, 0.38);
+}
+
+.flow-node--end {
+  border-color: rgba(147, 213, 109, 0.4);
+}
+
+.flow-node__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.flow-node__type,
+.flow-node__id,
+.flow-node__target,
+.flow-node__terminal {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.flow-node__type {
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.flow-node--start .flow-node__type {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.flow-node--question .flow-node__type {
+  color: var(--secondary);
+  background: var(--secondary-soft);
+}
+
+.flow-node--end .flow-node__type {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.flow-node__id {
+  color: var(--muted);
+}
+
+.flow-node__text {
+  margin: 0 0 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.flow-node__options {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.flow-node__option {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+}
+
+.flow-node__target,
+.flow-node__terminal {
+  color: var(--accent-strong);
+}
+
+.flow-node__terminal {
+  margin: 0;
 }
 
 .canvas-metrics {

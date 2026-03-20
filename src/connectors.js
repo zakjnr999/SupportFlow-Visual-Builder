@@ -47,7 +47,7 @@ export function createConnectorController({ root, state, render }) {
   let layoutFrame = 0;
 
   function updateConnections() {
-    if (!state.flow) {
+    if (!state.flow || state.mode !== "editor") {
       return;
     }
 
@@ -108,7 +108,7 @@ export function createConnectorController({ root, state, render }) {
   }
 
   function scheduleConnectionLayout() {
-    if (!state.flow || state.error) {
+    if (!state.flow || state.error || state.mode !== "editor") {
       return;
     }
 

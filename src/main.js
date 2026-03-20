@@ -1,5 +1,6 @@
 import { createConnectorController } from "./connectors.js";
 import { createEditorController } from "./editor.js";
+import { createPreviewController } from "./preview.js";
 import { renderApp } from "./render.js";
 
 const root = document.querySelector("#root");
@@ -11,6 +12,11 @@ const state = {
   connections: [],
   connectionSignature: "",
   selectedNodeId: null,
+  mode: "editor",
+  preview: {
+    currentNodeId: null,
+    transcript: [],
+  },
 };
 
 function findNodeById(nodeId) {
@@ -51,6 +57,13 @@ const editor = createEditorController({
   findNodeById,
 });
 
+const preview = createPreviewController({
+  root,
+  state,
+  render,
+  findNodeById,
+});
+
 async function loadFlow() {
   try {
     const response = await fetch("./flow_data.json");
@@ -72,3 +85,4 @@ render();
 loadFlow();
 window.addEventListener("resize", connectors.scheduleConnectionLayout);
 editor.attach();
+preview.attach();

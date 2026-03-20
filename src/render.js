@@ -137,6 +137,101 @@ function renderInspectorContent(flow, stats, selectedNode) {
   `;
 }
 
+function findPreviewCurrentNode(flow, preview) {
+  if (!flow || !preview?.currentNodeId) {
+    return null;
+  }
+
+  return flow.nodes.find((node) => node.id === preview.currentNodeId) ?? null;
+}
+
+function renderPreviewTranscript(preview) {
+  if (!preview?.transcript?.length) {
+    return `
+      <div class="preview-empty">
+        <p>Preview session not started yet.</p>
+      </div>
+    `;
+  }
+
+  return preview.transcript
+    .map(
+      (entry) => `
+        <article class="preview-bubble preview-bubble--${escapeHtml(entry.role)}">
+          <p>${escapeHtml(entry.text)}</p>
+          ${entry.nodeId ? `<span class="preview-bubble__meta">Node #${escapeHtml(entry.nodeId)}</span>` : ""}
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function renderPreviewActions(currentNode) {
+  if (!currentNode) {
+    return "";
+  }
+
+  if (!currentNode.options?.length) {
+    return `
+      <div class="preview-actions">
+        <p class="preview-end-note">You reached the end of this support path.</p>
+        <button class="preview-action-button" data-action="preview-restart" type="button">
+          Restart
+        </button>
+      </div>
+    `;
+  }
+
+  const options = currentNode.options
+    .map(
+      (option, index) => `
+        <button
+          class="preview-action-button"
+          data-action="preview-option"
+          data-option-index="${index}"
+          type="button"
+        >
+          ${escapeHtml(option.label)}
+        </button>
+      `,
+    )
+    .join("");
+
+  return `
+    <div class="preview-actions">
+      <p class="preview-end-note">Choose a response:</p>
+      ${options}
+    </div>
+  `;
+}
+
+function renderPreviewWorkspace(flow, preview) {
+  const currentNode = findPreviewCurrentNode(flow, preview);
+
+  return `
+    <main class="workspace workspace--preview">
+      <section class="panel panel--preview">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">Preview Mode</p>
+            <h2>Support Chat Runner</h2>
+          </div>
+          <span class="panel__meta">
+            ${currentNode ? `Current #${escapeHtml(currentNode.id)}` : "No active node"}
+          </span>
+        </div>
+
+        <div class="preview-shell">
+          <div class="preview-thread">
+            ${renderPreviewTranscript(preview)}
+          </div>
+          ${renderPreviewActions(currentNode)}
+        </div>
+      </section>
+    </main>
+  `;
+}
+
 export function renderApp({
   root,
   state,
@@ -149,6 +244,9 @@ export function renderApp({
     : state.flow
       ? `${stats.nodeCount} nodes loaded`
       : state.status;
+  const previewEnabled = Boolean(state.flow) && !state.error;
+  const previewActive = state.mode === "preview" && previewEnabled;
+  const previewButtonText = previewActive ? "Back To Editor" : "Play Preview";
 
   const canvasContent = state.error
     ? `
@@ -218,6 +316,35 @@ export function renderApp({
         </div>
       `;
 
+  const editorWorkspace = `
+    <main class="workspace">
+      <section class="panel">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">Flow canvas</p>
+            <h2>Conversation map</h2>
+          </div>
+          <span class="panel__meta">Canvas ready</span>
+        </div>
+        ${canvasContent}
+      </section>
+
+      <aside class="panel panel--sidebar">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">Inspector</p>
+            <h2>Node details</h2>
+          </div>
+          <span class="panel__meta">
+            ${selectedNode ? `Selected #${escapeHtml(selectedNode.id)}` : "No node selected"}
+          </span>
+        </div>
+
+        ${renderInspectorContent(state.flow, stats, selectedNode)}
+      </aside>
+    </main>
+  `;
+
   root.innerHTML = `
     <div class="app-shell">
       <header class="topbar">
@@ -231,40 +358,22 @@ export function renderApp({
         </div>
         <div class="topbar__actions">
           <span class="status-pill ${getStatusTone(state.error)}">${escapeHtml(statusText)}</span>
-          <button class="ghost-button" type="button" disabled>
-            Preview
+          <button
+            class="ghost-button"
+            type="button"
+            data-action="toggle-preview"
+            ${previewEnabled ? "" : "disabled"}
+          >
+            ${previewButtonText}
           </button>
         </div>
       </header>
 
-      <main class="workspace">
-        <section class="panel">
-          <div class="panel__header">
-            <div>
-              <p class="eyebrow">Flow canvas</p>
-              <h2>Conversation map</h2>
-            </div>
-            <span class="panel__meta">Canvas ready</span>
-          </div>
-          ${canvasContent}
-        </section>
-
-        <aside class="panel panel--sidebar">
-          <div class="panel__header">
-            <div>
-              <p class="eyebrow">Inspector</p>
-              <h2>Node details</h2>
-            </div>
-            <span class="panel__meta">
-              ${selectedNode ? `Selected #${escapeHtml(selectedNode.id)}` : "No node selected"}
-            </span>
-          </div>
-
-          ${renderInspectorContent(state.flow, stats, selectedNode)}
-        </aside>
-      </main>
+      ${previewActive ? renderPreviewWorkspace(state.flow, state.preview) : editorWorkspace}
     </div>
   `;
 
-  scheduleConnectionLayout();
+  if (!previewActive) {
+    scheduleConnectionLayout();
+  }
 }

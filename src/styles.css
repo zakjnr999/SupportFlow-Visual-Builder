@@ -228,6 +228,41 @@ select {
   background: rgba(255, 255, 255, 0.01);
 }
 
+.canvas-stage__connections {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.canvas-connection__path {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.canvas-connection__dot {
+  fill: currentColor;
+}
+
+.canvas-connection--start {
+  color: var(--accent);
+}
+
+.canvas-connection--start .canvas-connection__path {
+  stroke: rgba(79, 209, 179, 0.72);
+}
+
+.canvas-connection--question {
+  color: var(--secondary);
+}
+
+.canvas-connection--question .canvas-connection__path {
+  stroke: rgba(243, 190, 88, 0.66);
+}
+
 .canvas-note {
   padding: 14px 16px;
   border: 1px solid var(--line);
@@ -251,6 +286,7 @@ select {
 
 .flow-node {
   position: absolute;
+  z-index: 1;
   width: 230px;
   padding: 16px;
   border: 1px solid var(--line);

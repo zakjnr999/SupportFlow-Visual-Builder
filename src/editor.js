@@ -1,4 +1,103 @@
 export function createEditorController({ root, state, render, findNodeById }) {
+  const GRID_SIZE = 20;
+  let dragState = null;
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function snapToGrid(value) {
+    return Math.round(value / GRID_SIZE) * GRID_SIZE;
+  }
+
+  function beginDrag(event, nodeElement) {
+    const nodeId = nodeElement.dataset.nodeId;
+    const node = findNodeById(nodeId);
+
+    if (!node || !state.flow) {
+      return;
+    }
+
+    if (state.selectedNodeId !== nodeId) {
+      state.selectedNodeId = nodeId;
+      render();
+    }
+
+    dragState = {
+      nodeId,
+      pointerStartX: event.clientX,
+      pointerStartY: event.clientY,
+      originX: node.position.x,
+      originY: node.position.y,
+      nodeWidth: nodeElement.offsetWidth || 230,
+      nodeHeight: nodeElement.offsetHeight || 180,
+      moved: false,
+    };
+
+    document.body.classList.add("is-dragging-node");
+    const activeNode = root.querySelector(`.flow-node[data-node-id="${nodeId}"]`);
+    activeNode?.classList.add("flow-node--dragging");
+  }
+
+  function handleDragMove(event) {
+    if (!dragState || state.mode !== "editor" || !state.flow) {
+      return;
+    }
+
+    const node = findNodeById(dragState.nodeId);
+
+    if (!node) {
+      return;
+    }
+
+    const dx = event.clientX - dragState.pointerStartX;
+    const dy = event.clientY - dragState.pointerStartY;
+    const maxX = Math.max(
+      0,
+      state.flow.meta.canvas_size.w - dragState.nodeWidth,
+    );
+    const maxY = Math.max(
+      0,
+      state.flow.meta.canvas_size.h - dragState.nodeHeight,
+    );
+    const nextX = clamp(snapToGrid(dragState.originX + dx), 0, maxX);
+    const nextY = clamp(snapToGrid(dragState.originY + dy), 0, maxY);
+
+    if (nextX === node.position.x && nextY === node.position.y) {
+      return;
+    }
+
+    node.position.x = nextX;
+    node.position.y = nextY;
+    dragState.moved = true;
+
+    const activeNode = root.querySelector(
+      `.flow-node[data-node-id="${dragState.nodeId}"]`,
+    );
+
+    if (!activeNode) {
+      return;
+    }
+
+    activeNode.style.left = `${nextX}px`;
+    activeNode.style.top = `${nextY}px`;
+    activeNode.classList.add("flow-node--dragging");
+  }
+
+  function endDrag() {
+    if (!dragState) {
+      return;
+    }
+
+    const moved = dragState.moved;
+    dragState = null;
+    document.body.classList.remove("is-dragging-node");
+
+    if (moved) {
+      render();
+    }
+  }
+
   function restoreEditorSelection(nodeId, cursorState) {
     if (!cursorState) {
       return;
@@ -44,6 +143,10 @@ export function createEditorController({ root, state, render, findNodeById }) {
   }
 
   function handleRootClick(event) {
+    if (dragState?.moved) {
+      return;
+    }
+
     const nodeElement = event.target.closest(".flow-node");
 
     if (!nodeElement || !root.contains(nodeElement)) {
@@ -82,10 +185,37 @@ export function createEditorController({ root, state, render, findNodeById }) {
     selectNode(nodeElement.dataset.nodeId);
   }
 
+  function handleRootPointerDown(event) {
+    if (state.mode !== "editor" || event.button !== 0) {
+      return;
+    }
+
+    const nodeElement = event.target.closest(".flow-node");
+
+    if (!nodeElement || !root.contains(nodeElement)) {
+      return;
+    }
+
+    event.preventDefault();
+    beginDrag(event, nodeElement);
+  }
+
+  function handleWindowPointerMove(event) {
+    handleDragMove(event);
+  }
+
+  function handleWindowPointerUp() {
+    endDrag();
+  }
+
   function attach() {
     root.addEventListener("click", handleRootClick);
     root.addEventListener("input", handleRootInput);
     root.addEventListener("keydown", handleRootKeydown);
+    root.addEventListener("pointerdown", handleRootPointerDown);
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", handleWindowPointerUp);
+    window.addEventListener("pointercancel", handleWindowPointerUp);
   }
 
   return {

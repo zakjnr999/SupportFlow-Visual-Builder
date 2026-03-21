@@ -36,6 +36,12 @@ body {
   background: var(--bg);
 }
 
+body.is-dragging-node,
+body.is-dragging-node * {
+  user-select: none;
+  cursor: grabbing !important;
+}
+
 button,
 input,
 textarea,
@@ -378,6 +384,7 @@ select {
   background: #0d0d0d;
   box-shadow: 0 16px 24px rgba(0, 0, 0, 0.22);
   cursor: pointer;
+  touch-action: none;
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
@@ -406,6 +413,12 @@ select {
 .flow-node--selected {
   border-color: var(--accent-strong);
   box-shadow: 0 0 0 1px rgba(154, 240, 221, 0.4), 0 18px 30px rgba(0, 0, 0, 0.28);
+}
+
+.flow-node--dragging {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px rgba(154, 240, 221, 0.45), 0 22px 34px rgba(0, 0, 0, 0.36);
+  transform: none;
 }
 
 .flow-node__header {

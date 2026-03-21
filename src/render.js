@@ -291,7 +291,8 @@ export function renderApp({
             <div class="canvas-note">
               <p>
                 Nodes and connector lines are now rendered from the provided JSON.
-                Select a node to edit its question text from the inspector.
+                Drag nodes to rearrange the flow, then edit question text from the
+                inspector.
               </p>
             </div>
             <dl class="canvas-metrics">

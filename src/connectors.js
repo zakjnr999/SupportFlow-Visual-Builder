@@ -2,6 +2,7 @@ import { escapeHtml } from "./utils.js";
 
 function buildConnectionPath(connection) {
   const verticalDistance = Math.abs(connection.endY - connection.startY);
+  // Scale bezier depth with distance so short/long branches keep similar shape.
   const curveDepth = Math.max(56, verticalDistance * 0.45);
   const controlY1 = connection.startY + curveDepth;
   const controlY2 = connection.endY - curveDepth;
@@ -57,6 +58,7 @@ export function createConnectorController({ root, state, render }) {
       return;
     }
 
+    // Read rendered node boxes from the DOM (card heights can vary by content).
     const nodeLayout = new Map(
       Array.from(stage.querySelectorAll(".flow-node")).map((element) => [
         element.dataset.nodeId,
@@ -98,6 +100,7 @@ export function createConnectorController({ root, state, render }) {
 
     const signature = JSON.stringify(connections);
 
+    // Prevent render loops when layout did not actually change.
     if (signature === state.connectionSignature) {
       return;
     }
@@ -116,6 +119,7 @@ export function createConnectorController({ root, state, render }) {
       cancelAnimationFrame(layoutFrame);
     }
 
+    // Batch geometry reads/writes after paint for more stable measurements.
     layoutFrame = requestAnimationFrame(() => {
       layoutFrame = 0;
       updateConnections();

@@ -1,4 +1,5 @@
 export function createEditorController({ root, state, render, findNodeById }) {
+  // Keep node placement tidy and predictable while dragging.
   const GRID_SIZE = 20;
   let dragState = null;
 
@@ -19,6 +20,7 @@ export function createEditorController({ root, state, render, findNodeById }) {
     }
 
     if (state.selectedNodeId !== nodeId) {
+      // Selection follows drag start so inspector always matches active node.
       state.selectedNodeId = nodeId;
       render();
     }
@@ -79,6 +81,7 @@ export function createEditorController({ root, state, render, findNodeById }) {
       return;
     }
 
+    // Update position live without full rerender for smoother drag interaction.
     activeNode.style.left = `${nextX}px`;
     activeNode.style.top = `${nextY}px`;
     activeNode.classList.add("flow-node--dragging");
@@ -143,6 +146,7 @@ export function createEditorController({ root, state, render, findNodeById }) {
   }
 
   function handleRootClick(event) {
+    // Ignore click-up after a drag so we do not re-trigger selection logic.
     if (dragState?.moved) {
       return;
     }
@@ -213,6 +217,7 @@ export function createEditorController({ root, state, render, findNodeById }) {
     root.addEventListener("input", handleRootInput);
     root.addEventListener("keydown", handleRootKeydown);
     root.addEventListener("pointerdown", handleRootPointerDown);
+    // Track pointer globally so drag keeps working outside the canvas bounds.
     window.addEventListener("pointermove", handleWindowPointerMove);
     window.addEventListener("pointerup", handleWindowPointerUp);
     window.addEventListener("pointercancel", handleWindowPointerUp);

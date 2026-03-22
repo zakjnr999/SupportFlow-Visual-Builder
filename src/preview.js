@@ -3,6 +3,7 @@ function getStartNode(state) {
     return null;
   }
 
+  // Prefer explicit start node; fallback keeps preview resilient to malformed data.
   return state.flow.nodes.find((node) => node.type === "start") ?? state.flow.nodes[0] ?? null;
 }
 
@@ -19,6 +20,7 @@ export function createPreviewController({ root, state, render, findNodeById }) {
     }
 
     state.mode = "preview";
+    // Transcript is in-memory only: enough for runner behavior without persistence.
     state.preview = {
       currentNodeId: startNode.id,
       transcript: [
@@ -66,6 +68,7 @@ export function createPreviewController({ root, state, render, findNodeById }) {
       text: selectedOption.label,
     });
 
+    // Append next bot message immediately to simulate a live chat handoff.
     state.preview.currentNodeId = nextNode.id;
     state.preview.transcript.push({
       role: "bot",
